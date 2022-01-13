@@ -1,3 +1,4 @@
+
 import React from "react"
 
 
@@ -52,6 +53,7 @@ const result = dataTrending.map(x => <img src={x["images"]["original"]["url"]} a
       
     </div>
   );
+
 }
 
 export default App;

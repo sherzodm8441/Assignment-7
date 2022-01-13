@@ -4,73 +4,77 @@ import SearchField from "./SearchField";
 import "./App.css";
 
 function App() {
+  const [inputVal, setInputVal] = React.useState("");
+  const [searchedGifs, setSearchedGifs] = React.useState([]);
+
+  const [trendingGifs, setTrendingGifs] = React.useState([]);
+  const [randomGif, setRandomGif] = React.useState();
+  const [called, setCalled] = React.useState(0);
+
   const apiKey = "aZFV2oHSbfWwZMoBp512mh5Z7ZY9I7Ni";
 
-  const urlSearch = `http://api.giphy.com/v1/gifs/search?q=SEARCH+TERM+GOES+HERE&api_key=${apiKey}`;
+  const urlSearch = `http://api.giphy.com/v1/gifs/search?q=${inputVal}&api_key=${apiKey}`;
   const urlTrending = "http://api.giphy.com/v1/gifs/trending?api_key=" + apiKey;
   const urlRandom = "http://api.giphy.com/v1/gifs/random?api_key=" + apiKey;
-
-  const [dataSearch, setDataSearch] = React.useState("");
-  const [gifSearch, setGifSearch] = React.useState();
-  const [dataTrending, setDataTrending] = React.useState([]);
-  const [dataRandom, setDataRandom] = React.useState();
-  const [called, setCalled] = React.useState(0);
 
   React.useEffect(() => {
     fetch(urlTrending)
       .then((res) => res.json())
-      .then((data) => setDataTrending(data.data))
+      .then((data) => setTrendingGifs(data.data))
       .catch((error) => console.log(error));
   }, []);
 
   React.useEffect(() => {
     fetch(urlRandom)
       .then((res) => res.json())
-      .then((data) => setDataRandom(data.data))
+      .then((data) => setRandomGif(data.data))
       .catch((error) => console.log(error));
   }, [called]);
 
   React.useEffect(() => {
     fetch(urlSearch)
       .then((res) => res.json())
-      .then((data) => setGifSearch(data.data))
+      .then((data) => setSearchedGifs(data.data))
       .catch((error) => console.log(error));
-  }, [dataSearch]);
+  }, [inputVal]);
 
+  // handler for random gif button
   function changeCalled() {
     setCalled((prevState) => prevState + 1);
   }
 
+  // handler for searchbar
   function updateSearch(event) {
-    setDataSearch(event.target.value);
+    setInputVal(event.target.value);
   }
 
   function returnRandom() {
     return (
-      <Gifcard img={dataRandom.images.original.url} url={dataRandom.url} title={dataRandom.title} />
+      <Gifcard img={randomGif.images.original.url} url={randomGif.url} title={randomGif.title} />
     );
   }
 
-  /* TODO */
-  function returnSearched() {
-    return (
-      <Gifcard img={gifSearch.images.original.url} url={gifSearch.url} title={gifSearch.title} />
-    );
-  }
-
-
-  const result = dataTrending.map((gif) => (
+  const searchResults = searchedGifs.map((gif) => (
     <Gifcard img={gif.images.original.url} url={gif.url} title={gif.title} />
   ));
-  //const randomGif = <img src={dataRandom["images"]["original"]["url"]} alt=""/>
+
+  const result = trendingGifs.map((gif) => (
+    <Gifcard img={gif.images.original.url} url={gif.url} title={gif.title} />
+  ));
+  //const randomGif = <img src={randomGif["images"]["original"]["url"]} alt=""/>
 
   return (
     <div className="App">
-      <SearchField value={dataSearch} handleChange={updateSearch} />
-      <button onClick={changeCalled}>Random Gif</button>
-      {called > 0 && returnRandom()}
-      <h1>Trending</h1>
-      {result}
+      <div className="header">
+        <h2>Search for a GIF</h2>
+        <SearchField value={inputVal} handleChange={updateSearch} />
+        <button className="random-btn" onClick={changeCalled}>
+          Random Gif
+        </button>
+        {called > 0 && returnRandom()}
+      </div>
+      {!inputVal && <h1>Trending</h1>}
+      <div className="results-container">{inputVal ? searchResults : result}</div>
     </div>
   );
 }
